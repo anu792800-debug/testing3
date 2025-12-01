@@ -26,28 +26,32 @@
     </header>
 
     <main>
-        <section id="login-section" class="auth-form hidden">
-            <h2>Log In</h2>
+        
+        <section id="login-section" class="auth-form">
+            <h2>Please Log In</h2>
             <form id="login-form">
-                <input type="email" id="email-input" placeholder="Email" required>
-                <input type="password" id="password-input" placeholder="Password" required>
+                <input type="email" id="email-input" placeholder="Email (any email works)" required>
+                <input type="password" id="password-input" placeholder="Password (any password works)" required>
                 <button type="submit">Log In</button>
             </form>
-            <p id="auth-message" style="color: red;"></p>
+            <p id="auth-message"></p>
         </section>
-        <h2>Available Products</h2>
-        <div id="products-container" class="products-container">
-            </div>
 
-        <section id="cart-section" class="cart-section hidden">
-            <h2>Your Shopping Cart</h2>
-            <div id="cart-items"></div>
-            <div class="cart-summary">
-                <strong>Subtotal: <span id="cart-subtotal">$0.00</span></strong>
-            </div>
-            <button id="checkout-button">Proceed to Checkout (Demo)</button>
-            <button id="close-cart-button">Continue Shopping</button>
-        </section>
+        <div id="shopping-content" class="hidden">
+            <h2>Available Products</h2>
+            <div id="products-container" class="products-container">
+                </div>
+
+            <section id="cart-section" class="cart-section hidden">
+                <h2>Your Shopping Cart</h2>
+                <div id="cart-items"></div>
+                <div class="cart-summary">
+                    <strong>Subtotal: <span id="cart-subtotal">$0.00</span></strong>
+                </div>
+                <button id="checkout-button">Proceed to Checkout (Demo)</button>
+                <button id="close-cart-button">Continue Shopping</button>
+            </section>
+        </div>
     </main>
 
     <script src="script.js"></script>
