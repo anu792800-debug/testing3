@@ -1,23 +1,65 @@
-// --- New Authentication Variables and Elements ---
-let isAuthenticated = false;
+// --- Core Data and Elements ---
+const products = [
+    { id: 1, name: "Premium Laptop", price: 1200.00 },
+    { id: 2, name: "Wireless Headphones", price: 150.00 },
+    { id: 3, name: "Ergonomic Mouse", price: 45.00 },
+    { id: 4, name: "4K Monitor", price: 450.00 }
+];
+
 const loginSection = document.getElementById('login-section');
-const loginForm = document.getElementById('login-form');
+const shoppingContent = document.getElementById('shopping-content'); // New container for products/cart
 const userStatusElement = document.getElementById('user-status');
+const loginForm = document.getElementById('login-form');
 const authMessageElement = document.getElementById('auth-message');
 const productsContainer = document.getElementById('products-container');
+let cart = []; // Array to hold cart items
 
+// --- Persistence and Utility Functions (Simplified for this example) ---
 
-// --- Authentication Functions ---
+const saveCart = () => localStorage.setItem('shoppingCart', JSON.stringify(cart));
+const loadCart = () => {
+    const savedCart = localStorage.getItem('shoppingCart');
+    if (savedCart) { cart = JSON.parse(savedCart); }
+};
+const updateCartUI = () => {
+    // [Your existing cart rendering logic goes here]
+    const cartCountElement = document.getElementById('cart-count');
+    cartCountElement.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    saveCart();
+};
+
+const renderProducts = () => {
+    productsContainer.innerHTML = '';
+    products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <h3>${product.name}</h3>
+            <p>$${product.price.toFixed(2)}</p>
+            <button class="add-to-cart" data-id="${product.id}">Add to Cart</button>
+        `;
+        productsContainer.appendChild(productCard);
+    });
+};
+
+// --- AUTHENTICATION VISIBILITY LOGIC (Crucial for page switching) ---
 
 const updateAuthUI = () => {
+    // Check local storage for persistent session
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
     if (isAuthenticated) {
-        userStatusElement.innerHTML = `Welcome, User! <button id="logout-btn">Log Out</button>`;
+        // STATE 1: LOGGED IN (Show Shopping Page)
         loginSection.classList.add('hidden');
-        productsContainer.classList.remove('hidden'); 
+        shoppingContent.classList.remove('hidden');
+        userStatusElement.innerHTML = `<button id="logout-btn">Log Out</button>`;
+        authMessageElement.textContent = ''; // Clear message
+
     } else {
-        userStatusElement.innerHTML = `<button id="login-toggle-btn">Log In</button>`;
+        // STATE 2: LOGGED OUT (Show Login Page)
         loginSection.classList.remove('hidden');
-        productsContainer.classList.add('hidden'); // Hide products until logged in (optional)
+        shoppingContent.classList.add('hidden');
+        userStatusElement.innerHTML = `<button id="login-toggle-btn">Log In</button>`;
     }
 };
 
@@ -26,65 +68,52 @@ const handleLogin = (e) => {
     const email = document.getElementById('email-input').value;
     const password = document.getElementById('password-input').value;
     
-    // In a REAL application, you would send this email/password to a backend server.
-    // For this demo, we'll use a simple check and simulate success:
-
+    // ⚠️ DEMO LOGIN: Since there is no backend, any non-empty fields work 
     if (email && password) {
-        // SIMULATE SUCCESSFUL LOGIN
-        isAuthenticated = true;
-        authMessageElement.textContent = 'Login successful!';
+        authMessageElement.textContent = 'Login successful! Redirecting...';
         
-        // ⭐ Optional: Send a custom GA4 event for successful login
-        if (typeof gtag === 'function') {
-            gtag('event', 'login_success', {
-                'method': 'email_password'
-            });
-        }
-        
-        // Save status locally (not secure, but persists the demo state)
+        // Set persistent status
         localStorage.setItem('isAuthenticated', 'true');
         
+        // ⭐ Send GA4 Login Event (Optional, but good practice)
+        if (typeof gtag === 'function') {
+            gtag('event', 'login', { 'method': 'email_password' });
+        }
+        
     } else {
-        authMessageElement.textContent = 'Please enter both email and password.';
+        authMessageElement.textContent = 'Login failed. Please enter both email and password.';
     }
-    updateAuthUI();
+    
+    // Update the UI after a short delay to allow the user to read the message
+    setTimeout(updateAuthUI, 500); 
 };
 
 const handleLogout = () => {
-    isAuthenticated = false;
     localStorage.removeItem('isAuthenticated');
-    updateAuthUI();
-    authMessageElement.textContent = 'You have been logged out.';
+    updateAuthUI(); // Switch back to login page
 };
 
-// --- Update Initialization and Event Listeners ---
+// --- Event Listeners Setup ---
 
-const initAuth = () => {
-    // Check local storage for persistent session
-    if (localStorage.getItem('isAuthenticated') === 'true') {
-        isAuthenticated = true;
-    }
-    updateAuthUI();
-};
-
-// Add event listener setup to your existing setupEventListeners function
 const setupAuthListeners = () => {
     loginForm.addEventListener('submit', handleLogin);
     
-    // Toggle login/logout button functionality
+    // Listener for the Log Out button in the header
     userStatusElement.addEventListener('click', (e) => {
         if (e.target.id === 'logout-btn') {
             handleLogout();
-        } else if (e.target.id === 'login-toggle-btn') {
-            loginSection.classList.remove('hidden');
-            productsContainer.classList.add('hidden');
-        }
+        } 
+        // Note: The login-toggle-btn in the header is not needed since the main content is hidden.
     });
 };
 
-// --- IMPORTANT: Call these new functions ---
+
+// --- Initialization ---
+
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (Your existing loadCart, renderProducts, updateCartUI calls) ...
-    initAuth();
+    loadCart();
+    renderProducts();
+    updateCartUI(); // Initial check determines which page to show
     setupAuthListeners();
+    // [Ensure your existing cart event listeners are set up here]
 });
